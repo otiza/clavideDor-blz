@@ -8,13 +8,14 @@ namespace clavideDor_blz.ViewModels;
 /// </summary>
 public class ResultViewModel : BaseViewModel
 {
-    private readonly GameService _gameService;
     private readonly ScoreService _scoreService;
+    private readonly PdfExportService _pdfExportService;
     private readonly ILogger<ResultViewModel> _logger;
 
     private int _gameSessionId;
     private GameSessionStatistics? _statistics;
     private bool _pdfExporting;
+    private string _lastExportedFilePath = string.Empty;
 
     public int GameSessionId
     {
@@ -34,10 +35,16 @@ public class ResultViewModel : BaseViewModel
         set => SetProperty(ref _pdfExporting, value);
     }
 
-    public ResultViewModel(GameService gameService, ScoreService scoreService, ILogger<ResultViewModel> logger)
+    public string LastExportedFilePath
     {
-        _gameService = gameService;
+        get => _lastExportedFilePath;
+        set => SetProperty(ref _lastExportedFilePath, value);
+    }
+
+    public ResultViewModel(ScoreService scoreService, PdfExportService pdfExportService, ILogger<ResultViewModel> logger)
+    {
         _scoreService = scoreService;
+        _pdfExportService = pdfExportService;
         _logger = logger;
     }
 
@@ -86,14 +93,12 @@ public class ResultViewModel : BaseViewModel
 
             PdfExporting = true;
             ClearError();
+            LastExportedFilePath = string.Empty;
 
-            // TODO: Implement PDF export using PdfExportService
             _logger.LogInformation($"Exporting PDF for game session {GameSessionId}");
+            LastExportedFilePath = await _pdfExportService.ExportScoreReportAsync(Statistics);
 
-            // Simulate PDF generation
-            await Task.Delay(500);
-
-            _logger.LogInformation("PDF exported successfully");
+            _logger.LogInformation("PDF exported successfully to {FilePath}", LastExportedFilePath);
             return true;
         }
         catch (Exception ex)
@@ -143,4 +148,3 @@ public class ResultViewModel : BaseViewModel
         };
     }
 }
-

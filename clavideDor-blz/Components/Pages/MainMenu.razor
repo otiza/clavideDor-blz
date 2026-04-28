@@ -62,8 +62,7 @@
         await ViewModel.OnResumeGameAsync();
         if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
             return;
-        // TODO: Navigate to game page with session ID
-        NavigationManager.NavigateTo("/game");
+        NavigationManager.NavigateTo($"/game/{ViewModel.ResumeGameSessionId}");
     }
 
     private async Task OnHistory()

@@ -12,6 +12,7 @@ public class MainMenuViewModel : BaseViewModel
     private readonly ILogger<MainMenuViewModel> _logger;
     private bool _hasUnfinishedGame;
     private string _resumeGameButtonText = "Resume Game";
+    private int _resumeGameSessionId;
 
     public bool HasUnfinishedGame
     {
@@ -23,6 +24,12 @@ public class MainMenuViewModel : BaseViewModel
     {
         get => _resumeGameButtonText;
         set => SetProperty(ref _resumeGameButtonText, value);
+    }
+
+    public int ResumeGameSessionId
+    {
+        get => _resumeGameSessionId;
+        set => SetProperty(ref _resumeGameSessionId, value);
     }
 
     public MainMenuViewModel(GameService gameService, ILogger<MainMenuViewModel> logger)
@@ -41,10 +48,12 @@ public class MainMenuViewModel : BaseViewModel
             IsLoading = true;
             ClearError();
 
-            // TODO: Check if there are any unfinished games
-            // For now, we assume there might be one
-            HasUnfinishedGame = false;
-            ResumeGameButtonText = "Resume Game";
+            var unfinishedGame = await _gameService.GetLatestUnfinishedGameAsync();
+            HasUnfinishedGame = unfinishedGame != null;
+            ResumeGameSessionId = unfinishedGame?.Id ?? 0;
+            ResumeGameButtonText = unfinishedGame == null
+                ? "Resume Game"
+                : $"Resume: {unfinishedGame.Player?.Name ?? "Player"}";
 
             _logger.LogInformation("Main menu initialized");
         }
@@ -68,8 +77,7 @@ public class MainMenuViewModel : BaseViewModel
         {
             ClearError();
             _logger.LogInformation("New Game requested");
-            // Navigation will be handled by the page
-            // Page will navigate to /newgame
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
@@ -93,9 +101,7 @@ public class MainMenuViewModel : BaseViewModel
                 SetError("No unfinished game found");
                 return;
             }
-
-            // TODO: Load and resume the unfinished game
-            // Navigation will be handled by the page
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
@@ -113,7 +119,7 @@ public class MainMenuViewModel : BaseViewModel
         {
             ClearError();
             _logger.LogInformation("History requested");
-            // Page will navigate to /history
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
@@ -138,4 +144,3 @@ public class MainMenuViewModel : BaseViewModel
         }
     }
 }
-

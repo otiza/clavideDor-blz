@@ -262,6 +262,31 @@ public class GameService
     }
 
     /// <summary>
+    /// Get all finished game sessions with player and answered-question data
+    /// </summary>
+    public async Task<List<GameSession>> GetFinishedGamesAsync()
+    {
+        try
+        {
+            var finishedGames = await _context.GameSessions
+                .AsNoTracking()
+                .Where(g => g.IsFinished)
+                .Include(g => g.Player)
+                .Include(g => g.AnsweredQuestions)
+                .OrderByDescending(g => g.FinishedAt)
+                .ThenByDescending(g => g.StartedAt)
+                .ToListAsync();
+
+            return finishedGames;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading finished game sessions");
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Resume an unfinished game for a player
     /// </summary>
     public async Task<GameSession?> GetUnfinishedGameAsync(int playerId)
@@ -280,6 +305,29 @@ public class GameService
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Error getting unfinished game for player {playerId}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get the most recent unfinished game session across all players.
+    /// </summary>
+    public async Task<GameSession?> GetLatestUnfinishedGameAsync()
+    {
+        try
+        {
+            var unfinishedGame = await _context.GameSessions
+                .Include(g => g.Player)
+                .Include(g => g.AnsweredQuestions)
+                .Where(g => !g.IsFinished)
+                .OrderByDescending(g => g.StartedAt)
+                .FirstOrDefaultAsync();
+
+            return unfinishedGame;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting latest unfinished game");
             throw;
         }
     }
@@ -392,4 +440,3 @@ public class GameService
         }
     }
 }
-
