@@ -162,7 +162,9 @@ public class GameViewModel : BaseViewModel
 
             if (CurrentQuestion == null)
             {
-                SetError("No more questions available");
+                // No remaining question means the game reached the end.
+                // Keep error empty so the UI can show the "Game Finished" panel.
+                ClearError();
                 return;
             }
 
@@ -335,7 +337,16 @@ public class GameViewModel : BaseViewModel
     {
         try
         {
-            // Just load next question without penalty
+            if (CurrentQuestion == null)
+            {
+                SetError("No question to skip");
+                return;
+            }
+
+            await _gameService.SkipQuestionAsync(GameSessionId, CurrentQuestion.Id);
+            CurrentSession = await _gameService.GetGameSessionAsync(GameSessionId);
+            TotalQuestionsAnswered = CurrentSession?.AnsweredQuestions.Count ?? TotalQuestionsAnswered;
+
             await LoadNextQuestionAsync();
             _logger.LogInformation("Question skipped");
         }
@@ -397,6 +408,10 @@ public class GameViewModel : BaseViewModel
 
             IsLoading = true;
             ClearError();
+
+            await _gameService.ResetAnswerForRetryAsync(GameSessionId, CurrentQuestion.Id);
+            CurrentSession = await _gameService.GetGameSessionAsync(GameSessionId);
+            TotalQuestionsAnswered = CurrentSession?.AnsweredQuestions.Count ?? 0;
 
             // Reset answer
             SelectedAnswer = string.Empty;
@@ -517,4 +532,3 @@ public class GameViewModel : BaseViewModel
         return Math.Min((TotalQuestionsAnswered * 100) / totalQuestions, 100);
     }
 }
-
