@@ -165,6 +165,83 @@ public class GameService
     }
 
     /// <summary>
+    /// Remove a previously saved answer so the same question can be retried.
+    /// </summary>
+    public async Task ResetAnswerForRetryAsync(int gameSessionId, int questionId)
+    {
+        try
+        {
+            var session = await _context.GameSessions
+                .FirstOrDefaultAsync(g => g.Id == gameSessionId);
+
+            if (session == null)
+                throw new ArgumentException($"Game session {gameSessionId} not found");
+
+            var existingAnswer = await _context.AnsweredQuestions
+                .FirstOrDefaultAsync(aq => aq.GameSessionId == gameSessionId && aq.QuestionId == questionId);
+
+            if (existingAnswer == null)
+                throw new InvalidOperationException("No previous answer found for retry");
+
+            // Keep score consistent if this method gets reused.
+            session.Score -= existingAnswer.PointsEarned;
+            if (session.Score < 0)
+                session.Score = 0;
+
+            _context.AnsweredQuestions.Remove(existingAnswer);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Removed answer for retry in session {GameSessionId}, question {QuestionId}", gameSessionId, questionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting answer for retry in session {GameSessionId}, question {QuestionId}", gameSessionId, questionId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Mark the question as skipped (0 points) so it is not asked again.
+    /// </summary>
+    public async Task SkipQuestionAsync(int gameSessionId, int questionId)
+    {
+        try
+        {
+            var session = await _context.GameSessions
+                .FirstOrDefaultAsync(g => g.Id == gameSessionId);
+
+            if (session == null)
+                throw new ArgumentException($"Game session {gameSessionId} not found");
+
+            var existingAnswer = await _context.AnsweredQuestions
+                .FirstOrDefaultAsync(aq => aq.GameSessionId == gameSessionId && aq.QuestionId == questionId);
+
+            if (existingAnswer != null)
+                return;
+
+            var skippedAnswer = new AnsweredQuestion
+            {
+                GameSessionId = gameSessionId,
+                QuestionId = questionId,
+                SelectedAnswer = "SKIPPED",
+                IsCorrect = false,
+                PointsEarned = 0,
+                AnsweredAt = DateTime.UtcNow
+            };
+
+            _context.AnsweredQuestions.Add(skippedAnswer);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Question {QuestionId} skipped in session {GameSessionId}", questionId, gameSessionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error skipping question {QuestionId} in session {GameSessionId}", questionId, gameSessionId);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Save the current game progress
     /// </summary>
     public async Task SaveProgressAsync(int gameSessionId)

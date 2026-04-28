@@ -1,16 +1,15 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<div class="app-shell">
+    <header class="app-header">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a class="brand-title" href="/mainmenu">🎹 Clavier d'Or</a>
+            <span class="brand-subtitle">Code your way to the golden keyboard</span>
         </div>
+    </header>
 
-        <article class="content px-4">
+    <main class="app-main">
+        <article class="container content py-4">
             @Body
         </article>
     </main>
