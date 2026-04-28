@@ -310,6 +310,29 @@ public class GameService
     }
 
     /// <summary>
+    /// Get the most recent unfinished game session across all players.
+    /// </summary>
+    public async Task<GameSession?> GetLatestUnfinishedGameAsync()
+    {
+        try
+        {
+            var unfinishedGame = await _context.GameSessions
+                .Include(g => g.Player)
+                .Include(g => g.AnsweredQuestions)
+                .Where(g => !g.IsFinished)
+                .OrderByDescending(g => g.StartedAt)
+                .FirstOrDefaultAsync();
+
+            return unfinishedGame;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting latest unfinished game");
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Use a joker (role-specific ability)
     /// </summary>
     public async Task<bool> UseJokerAsync(int gameSessionId, PlayerRole role)
