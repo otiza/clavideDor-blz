@@ -99,12 +99,23 @@
 </div>
 
 @code {
+    private DotNetObjectReference<Game>? _selfReference;
+
     [Parameter]
     public int GameSessionId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await ViewModel.InitializeAsync(GameSessionId);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _selfReference = DotNetObjectReference.Create(this);
+        await JS.InvokeVoidAsync("registerGameKeyListener", _selfReference);
     }
 
     private void SelectAnswer(string answer) => ViewModel.SelectedAnswer = answer;
@@ -130,22 +141,30 @@
     }
     private void OnGoBack() => NavigationManager.NavigateTo("/mainmenu");
     private void OnViewResults() => NavigationManager.NavigateTo($"/result/{ViewModel.GameSessionId}");
-    private Task HandleKeyDown(KeyboardEventArgs args)
+    [JSInvokable]
+    public Task OnKeyPressed(string key)
     {
         if (ViewModel.IsLoading || ViewModel.Answered || ViewModel.CurrentQuestion == null)
             return Task.CompletedTask;
 
-        var key = args.Key?.Trim().ToUpperInvariant();
-        if (key is not ("A" or "B" or "C" or "D"))
+        var normalizedKey = key.Trim().ToUpperInvariant();
+        if (normalizedKey is not ("A" or "B" or "C" or "D"))
             return Task.CompletedTask;
 
-        if (ViewModel.HiddenWrongAnswers.Contains(key))
+        if (ViewModel.HiddenWrongAnswers.Contains(normalizedKey))
             return Task.CompletedTask;
 
-        ViewModel.SelectedAnswer = key;
+        ViewModel.SelectedAnswer = normalizedKey;
         StateHasChanged();
         return Task.CompletedTask;
     }
 
-    async ValueTask IAsyncDisposable.DisposeAsync() { }
+    private Task HandleKeyDown(KeyboardEventArgs args)
+        => OnKeyPressed(args.Key ?? string.Empty);
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("unregisterGameKeyListener");
+        _selfReference?.Dispose();
+    }
 }
