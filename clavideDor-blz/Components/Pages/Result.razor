@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject ResultViewModel ViewModel
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 @implements IAsyncDisposable
 
 <div class="container mt-5">
@@ -28,10 +29,10 @@
                         <h2 class="mb-0">Game Results</h2>
                     </div>
                     <div class="card-body">
-                        @if (!string.IsNullOrWhiteSpace(ViewModel.LastExportedFilePath))
+                        @if (!string.IsNullOrWhiteSpace(ViewModel.LastExportedFileName))
                         {
                             <div class="alert alert-success">
-                                PDF report exported successfully: <code>@ViewModel.LastExportedFilePath</code>
+                                PDF report downloaded: <code>@ViewModel.LastExportedFileName</code>
                             </div>
                         }
 
@@ -162,7 +163,18 @@
 
     private async Task OnExportPdf()
     {
-        await ViewModel.ExportPdfAsync();
+        var isExported = await ViewModel.ExportPdfAsync();
+        if (!isExported || ViewModel.LastExportedFileContent == null || ViewModel.LastExportedFileContent.Length == 0)
+        {
+            return;
+        }
+
+        var base64Content = Convert.ToBase64String(ViewModel.LastExportedFileContent);
+        await JS.InvokeVoidAsync(
+            "downloadFileFromBase64",
+            ViewModel.LastExportedFileName,
+            ViewModel.LastExportedContentType,
+            base64Content);
     }
 
     private void OnPlayAgain()

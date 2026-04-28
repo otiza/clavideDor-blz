@@ -6,7 +6,7 @@ using QuestPDF.Infrastructure;
 namespace clavideDor_blz.Services;
 
 /// <summary>
-/// Service responsible for exporting score reports as PDF files.
+/// Service responsible for exporting score reports as downloadable PDF files.
 /// </summary>
 public class PdfExportService
 {
@@ -18,25 +18,21 @@ public class PdfExportService
     }
 
     /// <summary>
-    /// Export a score report PDF and return the generated file path.
+    /// Export a score report PDF and return file metadata + content bytes.
     /// </summary>
-    public Task<string> ExportScoreReportAsync(GameSessionStatistics statistics)
+    public Task<PdfExportResult> ExportScoreReportAsync(GameSessionStatistics statistics)
     {
         if (statistics == null)
             throw new ArgumentNullException(nameof(statistics));
 
-        var exportsDirectory = Path.Combine(AppContext.BaseDirectory, "exports");
-        Directory.CreateDirectory(exportsDirectory);
-
         var safePlayerName = SanitizeFileName(statistics.PlayerName);
         var fileName = $"clavier-dor-score-{safePlayerName}-{statistics.GameSessionId}-{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
-        var filePath = Path.Combine(exportsDirectory, fileName);
 
         var categories = statistics.CategoriesCompleted.Count == 0
             ? "None"
             : string.Join(", ", statistics.CategoriesCompleted);
 
-        Document.Create(container =>
+        var documentBytes = Document.Create(container =>
         {
             container.Page(page =>
             {
@@ -62,11 +58,11 @@ public class PdfExportService
                     column.Item().Text($"Categories completed: {categories}");
                 });
             });
-        }).GeneratePdf(filePath);
+        }).GeneratePdf();
 
-        _logger.LogInformation("Score PDF exported to {FilePath} for session {GameSessionId}", filePath, statistics.GameSessionId);
+        _logger.LogInformation("Score PDF generated for download as {FileName} for session {GameSessionId}", fileName, statistics.GameSessionId);
 
-        return Task.FromResult(filePath);
+        return Task.FromResult(new PdfExportResult(fileName, "application/pdf", documentBytes));
     }
 
     private static string GetRoleLabel(Models.PlayerRole role)
@@ -93,3 +89,5 @@ public class PdfExportService
         return string.IsNullOrWhiteSpace(builder.ToString()) ? "player" : builder.ToString();
     }
 }
+
+public record PdfExportResult(string FileName, string ContentType, byte[] Content);

@@ -15,7 +15,9 @@ public class ResultViewModel : BaseViewModel
     private int _gameSessionId;
     private GameSessionStatistics? _statistics;
     private bool _pdfExporting;
-    private string _lastExportedFilePath = string.Empty;
+    private string _lastExportedFileName = string.Empty;
+    private byte[]? _lastExportedFileContent;
+    private string _lastExportedContentType = "application/pdf";
 
     public int GameSessionId
     {
@@ -35,10 +37,22 @@ public class ResultViewModel : BaseViewModel
         set => SetProperty(ref _pdfExporting, value);
     }
 
-    public string LastExportedFilePath
+    public string LastExportedFileName
     {
-        get => _lastExportedFilePath;
-        set => SetProperty(ref _lastExportedFilePath, value);
+        get => _lastExportedFileName;
+        set => SetProperty(ref _lastExportedFileName, value);
+    }
+
+    public byte[]? LastExportedFileContent
+    {
+        get => _lastExportedFileContent;
+        set => SetProperty(ref _lastExportedFileContent, value);
+    }
+
+    public string LastExportedContentType
+    {
+        get => _lastExportedContentType;
+        set => SetProperty(ref _lastExportedContentType, value);
     }
 
     public ResultViewModel(ScoreService scoreService, PdfExportService pdfExportService, ILogger<ResultViewModel> logger)
@@ -93,12 +107,16 @@ public class ResultViewModel : BaseViewModel
 
             PdfExporting = true;
             ClearError();
-            LastExportedFilePath = string.Empty;
+            LastExportedFileName = string.Empty;
+            LastExportedFileContent = null;
 
             _logger.LogInformation($"Exporting PDF for game session {GameSessionId}");
-            LastExportedFilePath = await _pdfExportService.ExportScoreReportAsync(Statistics);
+            var exportResult = await _pdfExportService.ExportScoreReportAsync(Statistics);
+            LastExportedFileName = exportResult.FileName;
+            LastExportedContentType = exportResult.ContentType;
+            LastExportedFileContent = exportResult.Content;
 
-            _logger.LogInformation("PDF exported successfully to {FilePath}", LastExportedFilePath);
+            _logger.LogInformation("PDF generated successfully for download as {FileName}", LastExportedFileName);
             return true;
         }
         catch (Exception ex)
