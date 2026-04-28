@@ -46,6 +46,28 @@
     </section>
 
     <section class="slide" data-step="3">
+      <h2>Why These Technical Choices?</h2>
+      <div class="grid">
+        <article>
+          <h3>Blazor Server</h3>
+          <ul>
+            <li>Fast to build for a student project.</li>
+            <li>C# end-to-end (same language for UI and backend).</li>
+            <li>Good fit for interactive quiz UI with minimal frontend complexity.</li>
+          </ul>
+        </article>
+        <article>
+          <h3>EF Core + SQLite</h3>
+          <ul>
+            <li>SQLite is lightweight and local-file friendly.</li>
+            <li>EF Core simplifies relationships and querying.</li>
+            <li>Perfect for save/resume/history with minimal setup.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="slide" data-step="4">
       <h2>Data Design (EF Core + SQLite)</h2>
       <ul>
         <li>Relational entities with FK navigation:</li>
@@ -57,33 +79,61 @@
       <p>Seed source: <code>clavideDor-blz/data/questions.csv</code> with duplicate protection.</p>
     </section>
 
-    <section class="slide" data-step="4">
+    <section class="slide" data-step="5">
       <h2>UML Class Diagram</h2>
       <div class="mermaid">
 classDiagram
-    class Player
-    class GameSession
-    class Question
-    class Category
-    class AnsweredQuestion
-    class PlayerRole
+    class Player {
+      +int Id
+      +string Name
+      +PlayerRole Role
+    }
+    class GameSession {
+      +int Id
+      +int PlayerId
+      +int Score
+      +bool IsFinished
+    }
+    class Question {
+      +int Id
+      +string Text
+      +string Correct
+      +bool IsBoss
+    }
+    class Category {
+      +int Id
+      +string Name
+    }
+    class AnsweredQuestion {
+      +int Id
+      +int GameSessionId
+      +int QuestionId
+      +bool IsCorrect
+      +int PointsEarned
+    }
+    class PlayerRole {
+      <<enumeration>>
+      FrontDeveloper
+      BackDeveloper
+      MobileDeveloper
+    }
     class GameService
     class PdfExportService
 
-    Player "1" --> "0..*" GameSession
-    GameSession "1" --> "0..*" AnsweredQuestion
-    Category "1" --> "0..*" Question
-    Question "1" --> "0..*" AnsweredQuestion
-    Player --> PlayerRole
+    Player "1" --> "0..*" GameSession : has
+    GameSession "1" --> "0..*" AnsweredQuestion : contains
+    Category "1" --> "0..*" Question : groups
+    Question "1" --> "0..*" AnsweredQuestion : referenced by
+    Player --> PlayerRole : uses
 
-    GameService ..> GameSession
-    GameService ..> Question
-    GameService ..> AnsweredQuestion
-    PdfExportService ..> GameSession
+    GameService ..> GameSession : manages
+    GameService ..> Question : loads
+    GameService ..> AnsweredQuestion : records
+    PdfExportService ..> GameSession : exports results
       </div>
     </section>
 
-    <section class="slide" data-step="5">
+    <section class="slide" data-step="6">
       <h2>Gameplay Engineering Notes</h2>
       <ul>
         <li>Front Developer: skip question once (persisted as skipped with 0 points).</li>
@@ -92,7 +142,17 @@ classDiagram
       </ul>
     </section>
 
-    <section class="slide" data-step="6">
+    <section class="slide" data-step="7">
+      <h2>Architecture Decisions & Trade-offs</h2>
+      <ul>
+        <li><strong>MVVM</strong> improves maintainability, but adds more files and boilerplate.</li>
+        <li><strong>Service layer</strong> centralizes logic and keeps pages thin.</li>
+        <li><strong>CSV seeding</strong> enables easy content updates but needs dedupe checks.</li>
+        <li><strong>In-memory PDF generation</strong> is ideal for browser download, but large files increase memory usage.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-step="8">
       <h2>Export & Reporting</h2>
       <ul>
         <li>QuestPDF generates professional score report in-memory.</li>
