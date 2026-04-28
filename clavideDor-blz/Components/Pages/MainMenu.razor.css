@@ -1,5 +1,5 @@
 .menu-page {
-    min-height: 70vh;
+    min-height: 78vh;
     display: flex;
     align-items: center;
 }
@@ -9,6 +9,8 @@
     border-radius: 20px;
     padding: 2rem;
     color: #102040;
+    width: min(920px, 100%);
+    margin-inline: auto;
 }
 
 .menu-card .btn {

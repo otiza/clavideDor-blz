@@ -5,7 +5,7 @@
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-<div class="game-page container-fluid mt-4">
+<div class="game-page container-fluid mt-4" @onkeydown:window="HandleKeyDown">
     @if (ViewModel.IsLoading && ViewModel.CurrentQuestion == null)
     {
         <div class="text-center mt-5">
@@ -59,6 +59,7 @@
                                     }
                                 }
                             </div>
+                            <div class="small text-muted mb-2">Tip: use keyboard keys <strong>A</strong>, <strong>B</strong>, <strong>C</strong>, <strong>D</strong> to select an answer.</div>
                             @if (ViewModel.ShowHint)
                             {
                                 <div class="alert alert-warning">@ViewModel.HintText</div>
@@ -129,5 +130,22 @@
     }
     private void OnGoBack() => NavigationManager.NavigateTo("/mainmenu");
     private void OnViewResults() => NavigationManager.NavigateTo($"/result/{ViewModel.GameSessionId}");
+    private Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (ViewModel.IsLoading || ViewModel.Answered || ViewModel.CurrentQuestion == null)
+            return Task.CompletedTask;
+
+        var key = args.Key?.Trim().ToUpperInvariant();
+        if (key is not ("A" or "B" or "C" or "D"))
+            return Task.CompletedTask;
+
+        if (ViewModel.HiddenWrongAnswers.Contains(key))
+            return Task.CompletedTask;
+
+        ViewModel.SelectedAnswer = key;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
     async ValueTask IAsyncDisposable.DisposeAsync() { }
 }
