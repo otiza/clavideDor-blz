@@ -47,8 +47,7 @@ public class HistoryViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// Load all finished games (for now, all sessions)
-    /// In a real app, we'd load all finished games from all players
+    /// Load all finished games
     /// </summary>
     public async Task LoadHistoryAsync()
     {
@@ -57,12 +56,10 @@ public class HistoryViewModel : BaseViewModel
             IsLoading = true;
             ClearError();
 
-            // TODO: Load all finished games from database
-            // For now, we'll show an empty list as a placeholder
-            AllGameSessions = [];
+            AllGameSessions = await _gameService.GetFinishedGamesAsync();
             ApplyFilter();
 
-            _logger.LogInformation("Game history loaded");
+            _logger.LogInformation("Game history loaded with {Count} finished sessions", AllGameSessions.Count);
         }
         catch (Exception ex)
         {
@@ -114,4 +111,3 @@ public class HistoryViewModel : BaseViewModel
         return date?.ToString("yyyy-MM-dd HH:mm") ?? "N/A";
     }
 }
-

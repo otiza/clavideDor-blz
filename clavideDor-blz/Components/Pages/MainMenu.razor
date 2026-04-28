@@ -30,6 +30,15 @@
                     <button type="button" class="btn btn-primary btn-lg mb-2" @onclick="OnNewGame" disabled="@ViewModel.IsLoading">
                         <span class="oi oi-plus"></span> New Game
                     </button>
+                    @if (ViewModel.HasUnfinishedGame)
+                    {
+                        <select class="form-select mb-2" @bind="ViewModel.SelectedResumeSessionId">
+                            @foreach (var session in ViewModel.UnfinishedGames)
+                            {
+                                <option value="@session.Id">@ViewModel.GetResumeOptionLabel(session)</option>
+                            }
+                        </select>
+                    }
                     <button type="button" class="btn btn-primary btn-lg mb-2" @onclick="OnResumeGame" disabled="@(!ViewModel.HasUnfinishedGame || ViewModel.IsLoading)">
                         <span class="oi oi-reload"></span> @ViewModel.ResumeGameButtonText
                     </button>
@@ -62,8 +71,7 @@
         await ViewModel.OnResumeGameAsync();
         if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
             return;
-        // TODO: Navigate to game page with session ID
-        NavigationManager.NavigateTo("/game");
+        NavigationManager.NavigateTo($"/game/{ViewModel.ResumeGameSessionId}");
     }
 
     private async Task OnHistory()
