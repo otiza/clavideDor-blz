@@ -58,13 +58,6 @@ public class CsvQuestionSeeder
     {
         try
         {
-            // Check if questions already exist
-            if ((await _context.Questions.CountAsync()) > 0)
-            {
-                _logger.LogInformation("Database already seeded with questions.");
-                return;
-            }
-
             _logger.LogInformation("Starting to seed questions from CSV...");
 
             // Get CSV file path
@@ -72,7 +65,7 @@ public class CsvQuestionSeeder
 
             if (!File.Exists(csvPath))
             {
-                throw new FileNotFoundException($"CSV file not found at {csvPath}");
+                throw new FileNotFoundException($"Could not seed data because questions.csv was not found at '{csvPath}'.");
             }
 
             using var reader = new StreamReader(csvPath);
@@ -89,54 +82,73 @@ public class CsvQuestionSeeder
 
             _logger.LogInformation($"Found {records.Count} records in CSV.");
 
-            // Dictionary to track added categories
-            var categories = new Dictionary<int, Category>();
+            // Already existing categories/questions
+            var categories = await _context.Categories
+                .ToDictionaryAsync(c => c.CategoryId, c => c);
+
+            var existingQuestionKeys = await _context.Questions
+                .Select(q => BuildQuestionKey(q.CategoryId, q.Text, q.ChoiceA, q.ChoiceB, q.ChoiceC, q.ChoiceD, q.Correct, q.IsBoss))
+                .ToHashSetAsync();
+
+            var categoriesCreated = 0;
+            var questionsAdded = 0;
+            var duplicatesSkipped = 0;
 
             foreach (var record in records)
             {
                 // Ensure category exists
                 if (!categories.ContainsKey(record.CategoryId))
                 {
-                    var existingCategory = await _context.Categories
-                        .Where(c => c.CategoryId == record.CategoryId)
-                        .FirstOrDefaultAsync();
+                    var newCategory = new Category
+                    {
+                        CategoryId = record.CategoryId,
+                        Name = record.CategoryName.Trim()
+                    };
+                    _context.Categories.Add(newCategory);
+                    categories[record.CategoryId] = newCategory;
+                    categoriesCreated++;
+                }
 
-                    if (existingCategory == null)
-                    {
-                        var newCategory = new Category
-                        {
-                            CategoryId = record.CategoryId,
-                            Name = record.CategoryName
-                        };
-                        _context.Categories.Add(newCategory);
-                        await _context.SaveChangesAsync();
-                        categories[record.CategoryId] = newCategory;
-                        _logger.LogInformation($"Added category: {record.CategoryName}");
-                    }
-                    else
-                    {
-                        categories[record.CategoryId] = existingCategory;
-                    }
+                var questionKey = BuildQuestionKey(
+                    record.CategoryId,
+                    record.Text,
+                    record.ChoiceA,
+                    record.ChoiceB,
+                    record.ChoiceC,
+                    record.ChoiceD,
+                    record.Correct,
+                    record.IsBoss);
+
+                if (existingQuestionKeys.Contains(questionKey))
+                {
+                    duplicatesSkipped++;
+                    continue;
                 }
 
                 // Create question
                 var question = new Question
                 {
                     CategoryId = record.CategoryId,
-                    Text = record.Text,
-                    ChoiceA = record.ChoiceA,
-                    ChoiceB = record.ChoiceB,
-                    ChoiceC = record.ChoiceC,
-                    ChoiceD = record.ChoiceD,
-                    Correct = record.Correct,
+                    Text = record.Text.Trim(),
+                    ChoiceA = record.ChoiceA.Trim(),
+                    ChoiceB = record.ChoiceB.Trim(),
+                    ChoiceC = record.ChoiceC.Trim(),
+                    ChoiceD = record.ChoiceD.Trim(),
+                    Correct = record.Correct.Trim().ToUpperInvariant(),
                     IsBoss = record.IsBoss
                 };
 
                 _context.Questions.Add(question);
+                existingQuestionKeys.Add(questionKey);
+                questionsAdded++;
             }
 
             await _context.SaveChangesAsync();
-            _logger.LogInformation($"Successfully seeded {records.Count} questions from CSV.");
+            _logger.LogInformation(
+                "Seeding completed. Categories added: {CategoriesCreated}, Questions added: {QuestionsAdded}, Duplicates skipped: {DuplicatesSkipped}.",
+                categoriesCreated,
+                questionsAdded,
+                duplicatesSkipped);
         }
         catch (Exception ex)
         {
@@ -144,5 +156,26 @@ public class CsvQuestionSeeder
             throw;
         }
     }
-}
 
+    private static string BuildQuestionKey(
+        int categoryId,
+        string text,
+        string choiceA,
+        string choiceB,
+        string choiceC,
+        string choiceD,
+        string correct,
+        bool isBoss)
+    {
+        return string.Join(
+            "|",
+            categoryId,
+            text.Trim(),
+            choiceA.Trim(),
+            choiceB.Trim(),
+            choiceC.Trim(),
+            choiceD.Trim(),
+            correct.Trim().ToUpperInvariant(),
+            isBoss);
+    }
+}

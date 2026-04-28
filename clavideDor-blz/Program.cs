@@ -3,6 +3,7 @@ using clavideDor_blz.Data;
 using clavideDor_blz.Services;
 using clavideDor_blz.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +20,10 @@ builder.Services.AddScoped<CsvQuestionSeeder>();
 builder.Services.AddScoped<DatabaseService>();
 
 // Register business logic services
+QuestPDF.Settings.License = LicenseType.Community;
 builder.Services.AddScoped<ScoreService>();
 builder.Services.AddScoped<GameService>();
+builder.Services.AddScoped<PdfExportService>();
 
 // Register ViewModels
 builder.Services.AddScoped<MainMenuViewModel>();
