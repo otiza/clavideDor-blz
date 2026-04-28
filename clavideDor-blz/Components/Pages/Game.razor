@@ -5,7 +5,7 @@
 @inject IJSRuntime JS
 @implements IAsyncDisposable
 
-<div class="container-fluid mt-4">
+<div class="game-page container-fluid mt-4" @onkeydown:window="HandleKeyDown">
     @if (ViewModel.IsLoading && ViewModel.CurrentQuestion == null)
     {
         <div class="text-center mt-5">
@@ -31,18 +31,22 @@
     }
     else
     {
-        <div class="row">
+        <div class="row g-3">
             <div class="col-md-9">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Question @ViewModel.CurrentQuestionIndex @(ViewModel.CurrentQuestion?.IsBoss == true ? "(BOSS)" : "")</h5>
+                <div class="card game-card shadow">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Question @ViewModel.CurrentQuestionIndex</h5>
+                        @if (ViewModel.CurrentQuestion?.IsBoss == true)
+                        {
+                            <span class="badge text-bg-danger">BOSS</span>
+                        }
                     </div>
                     <div class="card-body">
-                        <p class="mb-4">@ViewModel.CurrentQuestion?.Text</p>
+                        <p class="question-text mb-4">@ViewModel.CurrentQuestion?.Text</p>
 
                         @if (!ViewModel.Answered)
                         {
-                            <div class="mb-3">
+                            <div class="mb-3 answer-grid">
                                 @{
                                     var opts = new[] { ("A", ViewModel.CurrentQuestion?.ChoiceA), ("B", ViewModel.CurrentQuestion?.ChoiceB), ("C", ViewModel.CurrentQuestion?.ChoiceC), ("D", ViewModel.CurrentQuestion?.ChoiceD) };
                                 }
@@ -50,10 +54,16 @@
                                 {
                                     if (!ViewModel.HiddenWrongAnswers.Contains(l))
                                     {
-                                        <button class="btn btn-outline-primary w-100 mb-2" @onclick="@(() => SelectAnswer(l))">@l) @t</button>
+                                        var selectedClass = ViewModel.SelectedAnswer == l ? "btn-primary text-white" : "btn-outline-primary";
+                                        <button class="btn @selectedClass w-100 mb-2 text-start" @onclick="@(() => SelectAnswer(l))">@l) @t</button>
                                     }
                                 }
                             </div>
+                            <div class="small text-muted mb-2">Tip: use keyboard keys <strong>A</strong>, <strong>B</strong>, <strong>C</strong>, <strong>D</strong> to select an answer.</div>
+                            @if (ViewModel.ShowHint)
+                            {
+                                <div class="alert alert-warning">@ViewModel.HintText</div>
+                            }
                             <button class="btn btn-primary w-100" @onclick="OnSubmitAnswer" disabled="@(string.IsNullOrEmpty(ViewModel.SelectedAnswer) || ViewModel.IsLoading)">Submit</button>
                             @if (ViewModel.IsJokerAvailable())
                             {
@@ -75,7 +85,7 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card">
+                <div class="card game-side-card shadow">
                     <div class="card-body">
                         <p><strong>Score:</strong> @ViewModel.CurrentSession?.Score</p>
                         <p><strong>Progress:</strong> @ViewModel.TotalQuestionsAnswered</p>
@@ -89,12 +99,23 @@
 </div>
 
 @code {
+    private DotNetObjectReference<Game>? _selfReference;
+
     [Parameter]
     public int GameSessionId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await ViewModel.InitializeAsync(GameSessionId);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _selfReference = DotNetObjectReference.Create(this);
+        await JS.InvokeVoidAsync("registerGameKeyListener", _selfReference);
     }
 
     private void SelectAnswer(string answer) => ViewModel.SelectedAnswer = answer;
@@ -120,5 +141,30 @@
     }
     private void OnGoBack() => NavigationManager.NavigateTo("/mainmenu");
     private void OnViewResults() => NavigationManager.NavigateTo($"/result/{ViewModel.GameSessionId}");
-    async ValueTask IAsyncDisposable.DisposeAsync() { }
+    [JSInvokable]
+    public Task OnKeyPressed(string key)
+    {
+        if (ViewModel.IsLoading || ViewModel.Answered || ViewModel.CurrentQuestion == null)
+            return Task.CompletedTask;
+
+        var normalizedKey = key.Trim().ToUpperInvariant();
+        if (normalizedKey is not ("A" or "B" or "C" or "D"))
+            return Task.CompletedTask;
+
+        if (ViewModel.HiddenWrongAnswers.Contains(normalizedKey))
+            return Task.CompletedTask;
+
+        ViewModel.SelectedAnswer = normalizedKey;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleKeyDown(KeyboardEventArgs args)
+        => OnKeyPressed(args.Key ?? string.Empty);
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("unregisterGameKeyListener");
+        _selfReference?.Dispose();
+    }
 }

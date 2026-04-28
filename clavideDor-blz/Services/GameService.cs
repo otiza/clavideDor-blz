@@ -165,6 +165,83 @@ public class GameService
     }
 
     /// <summary>
+    /// Remove a previously saved answer so the same question can be retried.
+    /// </summary>
+    public async Task ResetAnswerForRetryAsync(int gameSessionId, int questionId)
+    {
+        try
+        {
+            var session = await _context.GameSessions
+                .FirstOrDefaultAsync(g => g.Id == gameSessionId);
+
+            if (session == null)
+                throw new ArgumentException($"Game session {gameSessionId} not found");
+
+            var existingAnswer = await _context.AnsweredQuestions
+                .FirstOrDefaultAsync(aq => aq.GameSessionId == gameSessionId && aq.QuestionId == questionId);
+
+            if (existingAnswer == null)
+                throw new InvalidOperationException("No previous answer found for retry");
+
+            // Keep score consistent if this method gets reused.
+            session.Score -= existingAnswer.PointsEarned;
+            if (session.Score < 0)
+                session.Score = 0;
+
+            _context.AnsweredQuestions.Remove(existingAnswer);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Removed answer for retry in session {GameSessionId}, question {QuestionId}", gameSessionId, questionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error resetting answer for retry in session {GameSessionId}, question {QuestionId}", gameSessionId, questionId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Mark the question as skipped (0 points) so it is not asked again.
+    /// </summary>
+    public async Task SkipQuestionAsync(int gameSessionId, int questionId)
+    {
+        try
+        {
+            var session = await _context.GameSessions
+                .FirstOrDefaultAsync(g => g.Id == gameSessionId);
+
+            if (session == null)
+                throw new ArgumentException($"Game session {gameSessionId} not found");
+
+            var existingAnswer = await _context.AnsweredQuestions
+                .FirstOrDefaultAsync(aq => aq.GameSessionId == gameSessionId && aq.QuestionId == questionId);
+
+            if (existingAnswer != null)
+                return;
+
+            var skippedAnswer = new AnsweredQuestion
+            {
+                GameSessionId = gameSessionId,
+                QuestionId = questionId,
+                SelectedAnswer = "SKIPPED",
+                IsCorrect = false,
+                PointsEarned = 0,
+                AnsweredAt = DateTime.UtcNow
+            };
+
+            _context.AnsweredQuestions.Add(skippedAnswer);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Question {QuestionId} skipped in session {GameSessionId}", questionId, gameSessionId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error skipping question {QuestionId} in session {GameSessionId}", questionId, gameSessionId);
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Save the current game progress
     /// </summary>
     public async Task SaveProgressAsync(int gameSessionId)
@@ -262,6 +339,31 @@ public class GameService
     }
 
     /// <summary>
+    /// Get all finished game sessions with player and answered-question data
+    /// </summary>
+    public async Task<List<GameSession>> GetFinishedGamesAsync()
+    {
+        try
+        {
+            var finishedGames = await _context.GameSessions
+                .AsNoTracking()
+                .Where(g => g.IsFinished)
+                .Include(g => g.Player)
+                .Include(g => g.AnsweredQuestions)
+                .OrderByDescending(g => g.FinishedAt)
+                .ThenByDescending(g => g.StartedAt)
+                .ToListAsync();
+
+            return finishedGames;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading finished game sessions");
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Resume an unfinished game for a player
     /// </summary>
     public async Task<GameSession?> GetUnfinishedGameAsync(int playerId)
@@ -280,6 +382,53 @@ public class GameService
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Error getting unfinished game for player {playerId}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get the most recent unfinished game session across all players.
+    /// </summary>
+    public async Task<GameSession?> GetLatestUnfinishedGameAsync()
+    {
+        try
+        {
+            var unfinishedGame = await _context.GameSessions
+                .Include(g => g.Player)
+                .Include(g => g.AnsweredQuestions)
+                .Where(g => !g.IsFinished)
+                .OrderByDescending(g => g.StartedAt)
+                .FirstOrDefaultAsync();
+
+            return unfinishedGame;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting latest unfinished game");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Get all unfinished games, newest first.
+    /// </summary>
+    public async Task<List<GameSession>> GetUnfinishedGamesAsync()
+    {
+        try
+        {
+            var unfinishedGames = await _context.GameSessions
+                .AsNoTracking()
+                .Include(g => g.Player)
+                .Include(g => g.AnsweredQuestions)
+                .Where(g => !g.IsFinished)
+                .OrderByDescending(g => g.StartedAt)
+                .ToListAsync();
+
+            return unfinishedGames;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting unfinished games list");
             throw;
         }
     }
@@ -392,4 +541,3 @@ public class GameService
         }
     }
 }
-

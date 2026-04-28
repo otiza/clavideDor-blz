@@ -8,13 +8,16 @@ namespace clavideDor_blz.ViewModels;
 /// </summary>
 public class ResultViewModel : BaseViewModel
 {
-    private readonly GameService _gameService;
     private readonly ScoreService _scoreService;
+    private readonly PdfExportService _pdfExportService;
     private readonly ILogger<ResultViewModel> _logger;
 
     private int _gameSessionId;
     private GameSessionStatistics? _statistics;
     private bool _pdfExporting;
+    private string _lastExportedFileName = string.Empty;
+    private byte[]? _lastExportedFileContent;
+    private string _lastExportedContentType = "application/pdf";
 
     public int GameSessionId
     {
@@ -34,10 +37,28 @@ public class ResultViewModel : BaseViewModel
         set => SetProperty(ref _pdfExporting, value);
     }
 
-    public ResultViewModel(GameService gameService, ScoreService scoreService, ILogger<ResultViewModel> logger)
+    public string LastExportedFileName
     {
-        _gameService = gameService;
+        get => _lastExportedFileName;
+        set => SetProperty(ref _lastExportedFileName, value);
+    }
+
+    public byte[]? LastExportedFileContent
+    {
+        get => _lastExportedFileContent;
+        set => SetProperty(ref _lastExportedFileContent, value);
+    }
+
+    public string LastExportedContentType
+    {
+        get => _lastExportedContentType;
+        set => SetProperty(ref _lastExportedContentType, value);
+    }
+
+    public ResultViewModel(ScoreService scoreService, PdfExportService pdfExportService, ILogger<ResultViewModel> logger)
+    {
         _scoreService = scoreService;
+        _pdfExportService = pdfExportService;
         _logger = logger;
     }
 
@@ -86,14 +107,16 @@ public class ResultViewModel : BaseViewModel
 
             PdfExporting = true;
             ClearError();
+            LastExportedFileName = string.Empty;
+            LastExportedFileContent = null;
 
-            // TODO: Implement PDF export using PdfExportService
             _logger.LogInformation($"Exporting PDF for game session {GameSessionId}");
+            var exportResult = await _pdfExportService.ExportScoreReportAsync(Statistics);
+            LastExportedFileName = exportResult.FileName;
+            LastExportedContentType = exportResult.ContentType;
+            LastExportedFileContent = exportResult.Content;
 
-            // Simulate PDF generation
-            await Task.Delay(500);
-
-            _logger.LogInformation("PDF exported successfully");
+            _logger.LogInformation("PDF generated successfully for download as {FileName}", LastExportedFileName);
             return true;
         }
         catch (Exception ex)
@@ -143,4 +166,3 @@ public class ResultViewModel : BaseViewModel
         };
     }
 }
-

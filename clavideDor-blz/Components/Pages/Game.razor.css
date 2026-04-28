@@ -1,0 +1,21 @@
+.game-page .game-card,
+.game-page .game-side-card {
+    border-radius: 16px;
+    border: none;
+}
+
+.game-page .game-card .card-header {
+    background: linear-gradient(90deg, #3949ab 0%, #5e35b1 100%);
+    color: #fff;
+    border-radius: 16px 16px 0 0;
+}
+
+.question-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #18233f;
+}
+
+.answer-grid .btn {
+    border-radius: 10px;
+}

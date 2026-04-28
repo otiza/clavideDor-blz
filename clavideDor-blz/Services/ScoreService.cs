@@ -67,7 +67,7 @@ public class ScoreService
             var session = await _context.GameSessions
                 .Include(g => g.AnsweredQuestions)
                     .ThenInclude(aq => aq.Question)
-                        .ThenInclude(q => q.Category)
+                        .ThenInclude(q => q!.Category)
                 .Include(g => g.Player)
                 .FirstOrDefaultAsync(g => g.Id == gameSessionId);
 
@@ -150,4 +150,3 @@ public class GameSessionStatistics
     public double AccuracyPercentage => 
         TotalQuestionsAnswered == 0 ? 0 : (double)CorrectAnswers / TotalQuestionsAnswered * 100;
 }
-

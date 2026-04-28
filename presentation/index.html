@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clavier d'Or - Technical Presentation</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script type="module" src="app.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <h1>🎹 Clavier d'Or</h1>
+    <p>Technical Design Presentation</p>
+  </header>
+
+  <main class="slides">
+    <section class="slide active" data-step="1">
+      <h2>Project Overview</h2>
+      <ul>
+        <li>Architecture: Object-Oriented + MVVM</li>
+        <li>Stack: Blazor Server, EF Core, SQLite, QuestPDF</li>
+        <li>Functional scope: new game, resume, history, result export</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-step="2">
+      <h2>Design Pattern Analysis</h2>
+      <div class="grid">
+        <article>
+          <h3>MVVM Pattern</h3>
+          <p><strong>Model</strong>: entities such as Player, GameSession, Question, Category.</p>
+          <p><strong>ViewModel</strong>: MainMenuViewModel, GameViewModel, ResultViewModel orchestrate UI state and commands.</p>
+          <p><strong>View</strong>: Razor pages render user interactions and bind to ViewModel properties.</p>
+        </article>
+        <article>
+          <h3>Service Layer Pattern</h3>
+          <p>Business logic is encapsulated in services:</p>
+          <ul>
+            <li>GameService: session lifecycle + gameplay actions</li>
+            <li>ScoreService: scoring and statistics</li>
+            <li>PdfExportService: reporting and export</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="slide" data-step="3">
+      <h2>Data Design (EF Core + SQLite)</h2>
+      <ul>
+        <li>Relational entities with FK navigation:</li>
+        <li>Player 1..* GameSession</li>
+        <li>GameSession 1..* AnsweredQuestion</li>
+        <li>Category 1..* Question</li>
+        <li>Question 1..* AnsweredQuestion</li>
+      </ul>
+      <p>Seed source: <code>clavideDor-blz/data/questions.csv</code> with duplicate protection.</p>
+    </section>
+
+    <section class="slide" data-step="4">
+      <h2>UML Class Diagram</h2>
+      <div class="mermaid">
+classDiagram
+    class Player
+    class GameSession
+    class Question
+    class Category
+    class AnsweredQuestion
+    class PlayerRole
+    class GameService
+    class PdfExportService
+
+    Player "1" --> "0..*" GameSession
+    GameSession "1" --> "0..*" AnsweredQuestion
+    Category "1" --> "0..*" Question
+    Question "1" --> "0..*" AnsweredQuestion
+    Player --> PlayerRole
+
+    GameService ..> GameSession
+    GameService ..> Question
+    GameService ..> AnsweredQuestion
+    PdfExportService ..> GameSession
+      </div>
+    </section>
+
+    <section class="slide" data-step="5">
+      <h2>Gameplay Engineering Notes</h2>
+      <ul>
+        <li>Front Developer: skip question once (persisted as skipped with 0 points).</li>
+        <li>Back Developer: retry flow resets prior answer to avoid duplicate-answer conflicts.</li>
+        <li>Mobile Developer: hint mechanism removes two wrong choices.</li>
+      </ul>
+    </section>
+
+    <section class="slide" data-step="6">
+      <h2>Export & Reporting</h2>
+      <ul>
+        <li>QuestPDF generates professional score report in-memory.</li>
+        <li>Blazor + JS interop triggers browser download.</li>
+        <li>Report includes metrics and analysis notes for player performance.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="controls">
+    <button id="prevBtn">◀ Prev</button>
+    <span id="counter"></span>
+    <button id="nextBtn">Next ▶</button>
+  </footer>
+</body>
+</html>
