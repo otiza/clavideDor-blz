@@ -28,6 +28,13 @@
                         <h2 class="mb-0">Game Results</h2>
                     </div>
                     <div class="card-body">
+                        @if (!string.IsNullOrWhiteSpace(ViewModel.LastExportedFilePath))
+                        {
+                            <div class="alert alert-success">
+                                PDF report exported successfully: <code>@ViewModel.LastExportedFilePath</code>
+                            </div>
+                        }
+
                         <!-- Player Info -->
                         <div class="row mb-4">
                             <div class="col-md-6">
@@ -173,4 +180,3 @@
         // Cleanup if needed
     }
 }
-
