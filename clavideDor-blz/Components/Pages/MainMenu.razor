@@ -4,43 +4,56 @@
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-<div class="container mt-5">
+<div class="menu-page py-4">
     <div class="row justify-content-center">
-        <div class="col-md-6 text-center">
-            <h1 class="display-4">🎮 Clavier d'Or</h1>
-            <p class="lead">Quiz Game Platform</p>
+        <div class="col-12">
+            <div class="menu-card shadow-lg">
+                <h1 class="display-5 text-center mb-2">🎮 Clavier d'Or</h1>
+                <p class="lead text-center text-muted mb-4">Quiz Game Platform</p>
             
-            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @ViewModel.ErrorMessage
-                    <button type="button" class="btn-close" @onclick="() => ClearError()"></button>
-                </div>
-            }
+                @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @ViewModel.ErrorMessage
+                        <button type="button" class="btn-close" @onclick="() => ClearError()"></button>
+                    </div>
+                }
 
-            @if (ViewModel.IsLoading)
-            {
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            }
-            else
-            {
-                <div class="btn-group-vertical w-100" role="group">
-                    <button type="button" class="btn btn-primary btn-lg mb-2" @onclick="OnNewGame" disabled="@ViewModel.IsLoading">
-                        <span class="oi oi-plus"></span> New Game
-                    </button>
-                    <button type="button" class="btn btn-primary btn-lg mb-2" @onclick="OnResumeGame" disabled="@(!ViewModel.HasUnfinishedGame || ViewModel.IsLoading)">
-                        <span class="oi oi-reload"></span> @ViewModel.ResumeGameButtonText
-                    </button>
-                    <button type="button" class="btn btn-primary btn-lg mb-2" @onclick="OnHistory" disabled="@ViewModel.IsLoading">
-                        <span class="oi oi-list"></span> History
-                    </button>
-                    <button type="button" class="btn btn-danger btn-lg" @onclick="OnQuit" disabled="@ViewModel.IsLoading">
-                        <span class="oi oi-x"></span> Quit
-                    </button>
-                </div>
-            }
+                @if (ViewModel.IsLoading)
+                {
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="btn-group-vertical w-100 gap-2" role="group">
+                        <button type="button" class="btn btn-primary btn-lg" @onclick="OnNewGame" disabled="@ViewModel.IsLoading">
+                            New Game
+                        </button>
+                        @if (ViewModel.HasUnfinishedGame)
+                        {
+                            <select class="form-select" @bind="ViewModel.SelectedResumeSessionId">
+                                @foreach (var session in ViewModel.UnfinishedGames)
+                                {
+                                    <option value="@session.Id">@ViewModel.GetResumeOptionLabel(session)</option>
+                                }
+                            </select>
+                        }
+                        <button type="button" class="btn btn-outline-primary btn-lg" @onclick="OnResumeGame" disabled="@(!ViewModel.HasUnfinishedGame || ViewModel.IsLoading)">
+                            @ViewModel.ResumeGameButtonText
+                        </button>
+                        <button type="button" class="btn btn-outline-light btn-lg" @onclick="OnHistory" disabled="@ViewModel.IsLoading">
+                            History
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg" @onclick="OnQuit" disabled="@ViewModel.IsLoading">
+                            Quit
+                        </button>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>
@@ -62,8 +75,7 @@
         await ViewModel.OnResumeGameAsync();
         if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
             return;
-        // TODO: Navigate to game page with session ID
-        NavigationManager.NavigateTo("/game");
+        NavigationManager.NavigateTo($"/game/{ViewModel.ResumeGameSessionId}");
     }
 
     private async Task OnHistory()

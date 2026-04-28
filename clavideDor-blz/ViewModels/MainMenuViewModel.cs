@@ -1,4 +1,5 @@
 using clavideDor_blz.Services;
+using clavideDor_blz.Models;
 
 namespace clavideDor_blz.ViewModels;
 
@@ -12,6 +13,9 @@ public class MainMenuViewModel : BaseViewModel
     private readonly ILogger<MainMenuViewModel> _logger;
     private bool _hasUnfinishedGame;
     private string _resumeGameButtonText = "Resume Game";
+    private int _resumeGameSessionId;
+    private List<GameSession> _unfinishedGames = [];
+    private int _selectedResumeSessionId;
 
     public bool HasUnfinishedGame
     {
@@ -23,6 +27,24 @@ public class MainMenuViewModel : BaseViewModel
     {
         get => _resumeGameButtonText;
         set => SetProperty(ref _resumeGameButtonText, value);
+    }
+
+    public int ResumeGameSessionId
+    {
+        get => _resumeGameSessionId;
+        set => SetProperty(ref _resumeGameSessionId, value);
+    }
+
+    public List<GameSession> UnfinishedGames
+    {
+        get => _unfinishedGames;
+        set => SetProperty(ref _unfinishedGames, value);
+    }
+
+    public int SelectedResumeSessionId
+    {
+        get => _selectedResumeSessionId;
+        set => SetProperty(ref _selectedResumeSessionId, value);
     }
 
     public MainMenuViewModel(GameService gameService, ILogger<MainMenuViewModel> logger)
@@ -41,10 +63,21 @@ public class MainMenuViewModel : BaseViewModel
             IsLoading = true;
             ClearError();
 
-            // TODO: Check if there are any unfinished games
-            // For now, we assume there might be one
-            HasUnfinishedGame = false;
-            ResumeGameButtonText = "Resume Game";
+            UnfinishedGames = await _gameService.GetUnfinishedGamesAsync();
+            HasUnfinishedGame = UnfinishedGames.Count > 0;
+
+            if (HasUnfinishedGame)
+            {
+                SelectedResumeSessionId = UnfinishedGames[0].Id;
+                ResumeGameSessionId = SelectedResumeSessionId;
+                ResumeGameButtonText = "Resume Selected Game";
+            }
+            else
+            {
+                SelectedResumeSessionId = 0;
+                ResumeGameSessionId = 0;
+                ResumeGameButtonText = "Resume Game";
+            }
 
             _logger.LogInformation("Main menu initialized");
         }
@@ -68,8 +101,7 @@ public class MainMenuViewModel : BaseViewModel
         {
             ClearError();
             _logger.LogInformation("New Game requested");
-            // Navigation will be handled by the page
-            // Page will navigate to /newgame
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
@@ -94,8 +126,14 @@ public class MainMenuViewModel : BaseViewModel
                 return;
             }
 
-            // TODO: Load and resume the unfinished game
-            // Navigation will be handled by the page
+            if (SelectedResumeSessionId <= 0)
+            {
+                SetError("Please select a game to resume");
+                return;
+            }
+
+            ResumeGameSessionId = SelectedResumeSessionId;
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
@@ -113,13 +151,21 @@ public class MainMenuViewModel : BaseViewModel
         {
             ClearError();
             _logger.LogInformation("History requested");
-            // Page will navigate to /history
+            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in OnHistory");
             SetError("An error occurred");
         }
+    }
+
+    public string GetResumeOptionLabel(GameSession session)
+    {
+        var playerName = session.Player?.Name ?? "Unknown";
+        var startedAt = session.StartedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+        var answered = session.AnsweredQuestions.Count;
+        return $"{playerName} • Started {startedAt} • Score {session.Score} • {answered} answered";
     }
 
     /// <summary>
@@ -138,4 +184,3 @@ public class MainMenuViewModel : BaseViewModel
         }
     }
 }
-
