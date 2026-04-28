@@ -86,9 +86,10 @@ public class CsvQuestionSeeder
             var categories = await _context.Categories
                 .ToDictionaryAsync(c => c.CategoryId, c => c);
 
-            var existingQuestionKeys = await _context.Questions
+            var existingQuestionKeys = (await _context.Questions
                 .Select(q => BuildQuestionKey(q.CategoryId, q.Text, q.ChoiceA, q.ChoiceB, q.ChoiceC, q.ChoiceD, q.Correct, q.IsBoss))
-                .ToHashSetAsync();
+                .ToListAsync())
+                .ToHashSet();
 
             var categoriesCreated = 0;
             var questionsAdded = 0;
