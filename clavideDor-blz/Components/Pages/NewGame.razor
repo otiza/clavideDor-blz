@@ -1,0 +1,151 @@
+@page "/newgame"
+@rendermode InteractiveServer
+@inject NewGameViewModel ViewModel
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">🎮 Create New Game</h3>
+                </div>
+                <div class="card-body">
+                    @if (ViewModel.GameStarted)
+                    {
+                        <div class="alert alert-success">
+                            <h5>Game Started Successfully!</h5>
+                            <p>Player: <strong>@ViewModel.PlayerName</strong></p>
+                            <p>Role: <strong>@ViewModel.GetRoleDisplayName(ViewModel.SelectedRole)</strong></p>
+                            <p>Session ID: <strong>@ViewModel.CreatedGameSessionId</strong></p>
+                            <button class="btn btn-primary" @onclick="GoToGame">Start Playing</button>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                @ViewModel.ErrorMessage
+                                <button type="button" class="btn-close" @onclick="() => ClearError()"></button>
+                            </div>
+                        }
+
+                        <form @onsubmit="OnStartGame">
+                            <!-- Player Name Input -->
+                            <div class="mb-3">
+                                <label for="playerName" class="form-label">Your Name *</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="playerName"
+                                       placeholder="Enter your name"
+                                       @bind="ViewModel.PlayerName"
+                                       disabled="@ViewModel.IsLoading"
+                                       maxlength="100"
+                                       required />
+                                <small class="text-muted">2-100 characters</small>
+                            </div>
+
+                            <!-- Role Selection -->
+                            <div class="mb-4">
+                                <label class="form-label d-block">Select Your Role *</label>
+                                
+                                @foreach (var role in ViewModel.AvailableRoles)
+                                {
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" 
+                                               type="radio" 
+                                               name="role"
+                                               id="role_@role"
+                                               value="@role"
+                                               @onchange="@((ChangeEventArgs e) => OnRoleChanged(role))"
+                                               disabled="@ViewModel.IsLoading"
+                                               checked="@(ViewModel.SelectedRole == role)" />
+                                        <label class="form-check-label" for="role_@role">
+                                            <strong>@ViewModel.GetRoleDisplayName(role)</strong>
+                                            <br />
+                                            <small class="text-muted">@GetRoleDescription(role)</small>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Role Description -->
+                            <div class="alert alert-info">
+                                <strong>Selected Role:</strong><br />
+                                @ViewModel.GetRoleDescription(ViewModel.SelectedRole)
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" 
+                                        class="btn btn-secondary" 
+                                        @onclick="OnCancel"
+                                        disabled="@ViewModel.IsLoading">
+                                    Back
+                                </button>
+                                <button type="submit" 
+                                        class="btn btn-primary" 
+                                        disabled="@ViewModel.IsLoading">
+                                    @if (ViewModel.IsLoading)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Starting Game...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Start Game</span>
+                                    }
+                                </button>
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private async Task OnStartGame()
+    {
+        var success = await ViewModel.StartNewGameAsync();
+        if (!success)
+        {
+            // Error message is displayed in ViewModel.ErrorMessage
+        }
+    }
+
+    private void OnRoleChanged(PlayerRole role)
+    {
+        ViewModel.SelectedRole = role;
+    }
+
+    private string GetRoleDescription(PlayerRole role)
+    {
+        return ViewModel.GetRoleDescription(role);
+    }
+
+    private void OnCancel()
+    {
+        ViewModel.Reset();
+        NavigationManager.NavigateTo("/mainmenu");
+    }
+
+    private void GoToGame()
+    {
+        NavigationManager.NavigateTo($"/game/{ViewModel.CreatedGameSessionId}");
+    }
+
+    private void ClearError()
+    {
+        ViewModel.ErrorMessage = string.Empty;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        // Cleanup if needed
+    }
+}
+

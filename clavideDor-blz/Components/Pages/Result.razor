@@ -1,0 +1,176 @@
+@page "/result/{gameSessionId:int}"
+@rendermode InteractiveServer
+@inject ResultViewModel ViewModel
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<div class="container mt-5">
+    @if (ViewModel.IsLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status"></div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            <h4>Error</h4>
+            <p>@ViewModel.ErrorMessage</p>
+            <button class="btn btn-primary" @onclick="OnGoBack">Back</button>
+        </div>
+    }
+    else if (ViewModel.Statistics != null)
+    {
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h2 class="mb-0">Game Results</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Player Info -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <p><strong>Player:</strong> @ViewModel.Statistics.PlayerName</p>
+                                <p><strong>Role:</strong> @GetRoleDisplayName(ViewModel.Statistics.PlayerRole)</p>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <p><strong>Date:</strong> @ViewModel.Statistics.StartDate.ToString("yyyy-MM-dd HH:mm")</p>
+                                <p><strong>Duration:</strong> @GetDuration(ViewModel.Statistics.StartDate, ViewModel.Statistics.EndDate)</p>
+                            </div>
+                        </div>
+
+                        <!-- Score Section -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5>Final Score</h5>
+                                        <h1 class="display-3 text-success">@ViewModel.Statistics.TotalScore</h1>
+                                        <p class="text-muted">@ViewModel.GetScoreRating()</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h5>Accuracy</h5>
+                                        <h1 class="display-3 text-info">@ViewModel.Statistics.AccuracyPercentage.ToString("F1")%</h1>
+                                        <p class="text-muted">@ViewModel.GetAccuracyRating()</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h6>Total Questions</h6>
+                                        <h3 class="text-primary">@ViewModel.Statistics.TotalQuestionsAnswered</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h6>Correct</h6>
+                                        <h3 class="text-success">@ViewModel.Statistics.CorrectAnswers</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h6>Wrong</h6>
+                                        <h3 class="text-danger">@ViewModel.Statistics.IncorrectAnswers</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Categories -->
+                        @if (ViewModel.Statistics.CategoriesCompleted.Count > 0)
+                        {
+                            <div class="mb-4">
+                                <h6>Categories Completed</h6>
+                                <div>
+                                    @foreach (var category in ViewModel.Statistics.CategoriesCompleted)
+                                    {
+                                        <span class="badge bg-info me-2">@category</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button class="btn btn-primary" @onclick="OnPlayAgain">Play Again</button>
+                            <button class="btn btn-warning" @onclick="OnExportPdf" disabled="@ViewModel.PdfExporting">
+                                @if (ViewModel.PdfExporting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Exporting...</span>
+                                }
+                                else
+                                {
+                                    <span>Export PDF</span>
+                                }
+                            </button>
+                            <button class="btn btn-secondary" @onclick="OnGoBack">Back to Menu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int GameSessionId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.LoadResultsAsync(GameSessionId);
+    }
+
+    private string GetRoleDisplayName(PlayerRole role)
+    {
+        return role switch
+        {
+            PlayerRole.FrontDeveloper => "Front Developer",
+            PlayerRole.BackDeveloper => "Back Developer",
+            PlayerRole.MobileDeveloper => "Mobile Developer",
+            _ => "Unknown"
+        };
+    }
+
+    private string GetDuration(DateTime start, DateTime end)
+    {
+        var duration = end - start;
+        return $"{(int)duration.TotalMinutes}m {duration.Seconds}s";
+    }
+
+    private async Task OnExportPdf()
+    {
+        await ViewModel.ExportPdfAsync();
+    }
+
+    private void OnPlayAgain()
+    {
+        NavigationManager.NavigateTo("/newgame");
+    }
+
+    private void OnGoBack()
+    {
+        NavigationManager.NavigateTo("/mainmenu");
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        // Cleanup if needed
+    }
+}
+

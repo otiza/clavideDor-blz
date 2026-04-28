@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>clavideDor_blz</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Entity Framework Core for SQLite -->
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <!-- MVVM Toolkit -->
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+        <!-- CSV Helper -->
+        <PackageReference Include="CsvHelper" Version="30.0.1" />
+        <!-- PDF Export -->
+        <PackageReference Include="QuestPDF" Version="2024.3.0" />
+    </ItemGroup>
+
+    <!-- Keep questions.csv in output -->
+    <ItemGroup>
+        <None Update="data\questions.csv">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>

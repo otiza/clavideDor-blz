@@ -1,0 +1,124 @@
+@page "/game/{gameSessionId:int}"
+@rendermode InteractiveServer
+@inject GameViewModel ViewModel
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="container-fluid mt-4">
+    @if (ViewModel.IsLoading && ViewModel.CurrentQuestion == null)
+    {
+        <div class="text-center mt-5">
+            <div class="spinner-border" role="status"></div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            <h4>Error</h4>
+            <p>@ViewModel.ErrorMessage</p>
+            <button class="btn btn-primary" @onclick="OnGoBack">Back</button>
+        </div>
+    }
+    else if (ViewModel.CurrentQuestion == null)
+    {
+        <div class="alert alert-success">
+            <h4>Game Finished!</h4>
+            <p>Final Score: @ViewModel.CurrentSession?.Score</p>
+            <button class="btn btn-primary" @onclick="OnViewResults">Results</button>
+            <button class="btn btn-secondary" @onclick="OnGoBack">Menu</button>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Question @ViewModel.CurrentQuestionIndex @(ViewModel.CurrentQuestion?.IsBoss == true ? "(BOSS)" : "")</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-4">@ViewModel.CurrentQuestion?.Text</p>
+
+                        @if (!ViewModel.Answered)
+                        {
+                            <div class="mb-3">
+                                @{
+                                    var opts = new[] { ("A", ViewModel.CurrentQuestion?.ChoiceA), ("B", ViewModel.CurrentQuestion?.ChoiceB), ("C", ViewModel.CurrentQuestion?.ChoiceC), ("D", ViewModel.CurrentQuestion?.ChoiceD) };
+                                }
+                                @foreach (var (l, t) in opts)
+                                {
+                                    if (!ViewModel.HiddenWrongAnswers.Contains(l))
+                                    {
+                                        <button class="btn btn-outline-primary w-100 mb-2" @onclick="@(() => SelectAnswer(l))">@l) @t</button>
+                                    }
+                                }
+                            </div>
+                            <button class="btn btn-primary w-100" @onclick="OnSubmitAnswer" disabled="@(string.IsNullOrEmpty(ViewModel.SelectedAnswer) || ViewModel.IsLoading)">Submit</button>
+                            @if (ViewModel.IsJokerAvailable())
+                            {
+                                <button class="btn btn-warning w-100 mt-2" @onclick="OnUseJoker">@ViewModel.GetJokerButtonText()</button>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert @(ViewModel.AnswerCorrect ? "alert-success" : "alert-danger")">
+                                @(ViewModel.AnswerCorrect ? "Correct!" : "Wrong! Answer: " + ViewModel.CurrentQuestion?.Correct)
+                            </div>
+                            @if (ViewModel.ShowRetryOption)
+                            {
+                                <button class="btn btn-info w-100 mb-2" @onclick="OnRetryQuestion">Retry</button>
+                            }
+                            <button class="btn btn-primary w-100" @onclick="OnNextQuestion">Next</button>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <p><strong>Score:</strong> @ViewModel.CurrentSession?.Score</p>
+                        <p><strong>Progress:</strong> @ViewModel.TotalQuestionsAnswered</p>
+                        <button class="btn btn-sm btn-secondary w-100 mb-2" @onclick="OnSaveProgress">Save</button>
+                        <button class="btn btn-sm btn-danger w-100" @onclick="OnQuitGame">Quit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int GameSessionId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.InitializeAsync(GameSessionId);
+    }
+
+    private void SelectAnswer(string answer) => ViewModel.SelectedAnswer = answer;
+    private async Task OnSubmitAnswer() => await ViewModel.SubmitAnswerAsync();
+    private async Task OnUseJoker() => await ViewModel.UseJokerAsync();
+    private async Task OnNextQuestion()
+    {
+        if (!await ViewModel.NextQuestionAsync())
+        {
+            await ViewModel.FinishGameAsync();
+            StateHasChanged();
+        }
+    }
+    private async Task OnRetryQuestion() => await ViewModel.RetryQuestionAsync();
+    private async Task OnSaveProgress() => await ViewModel.SaveProgressAsync();
+    private async Task OnQuitGame()
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Quit game?"))
+        {
+            await ViewModel.SaveProgressAsync();
+            NavigationManager.NavigateTo("/mainmenu");
+        }
+    }
+    private void OnGoBack() => NavigationManager.NavigateTo("/mainmenu");
+    private void OnViewResults() => NavigationManager.NavigateTo($"/result/{ViewModel.GameSessionId}");
+    async ValueTask IAsyncDisposable.DisposeAsync() { }
+}

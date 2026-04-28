@@ -1,0 +1,89 @@
+@page "/mainmenu"
+@rendermode InteractiveServer
+@inject MainMenuViewModel ViewModel
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="display-4">🎮 Clavier d'Or</h1>
+            <p class="lead">Quiz Game Platform</p>
+            
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @ViewModel.ErrorMessage
+                    <button type="button" class="btn-close" @onclick="() => ClearError()"></button>
+                </div>
+            }
+
+            @if (ViewModel.IsLoading)
+            {
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            }
+            else
+            {
+                <div class="btn-group-vertical w-100" role="group">
+                    <button type="button" class="btn btn-primary btn-lg mb-2" @onclick="OnNewGame" disabled="@ViewModel.IsLoading">
+                        <span class="oi oi-plus"></span> New Game
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg mb-2" @onclick="OnResumeGame" disabled="@(!ViewModel.HasUnfinishedGame || ViewModel.IsLoading)">
+                        <span class="oi oi-reload"></span> @ViewModel.ResumeGameButtonText
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg mb-2" @onclick="OnHistory" disabled="@ViewModel.IsLoading">
+                        <span class="oi oi-list"></span> History
+                    </button>
+                    <button type="button" class="btn btn-danger btn-lg" @onclick="OnQuit" disabled="@ViewModel.IsLoading">
+                        <span class="oi oi-x"></span> Quit
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.InitializeAsync();
+    }
+
+    private async Task OnNewGame()
+    {
+        await ViewModel.OnNewGameAsync();
+        NavigationManager.NavigateTo("/newgame");
+    }
+
+    private async Task OnResumeGame()
+    {
+        await ViewModel.OnResumeGameAsync();
+        if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            return;
+        // TODO: Navigate to game page with session ID
+        NavigationManager.NavigateTo("/game");
+    }
+
+    private async Task OnHistory()
+    {
+        await ViewModel.OnHistoryAsync();
+        NavigationManager.NavigateTo("/history");
+    }
+
+    private void OnQuit()
+    {
+        ViewModel.OnQuit();
+    }
+
+    private void ClearError()
+    {
+        ViewModel.ErrorMessage = string.Empty;
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        // Cleanup if needed
+    }
+}

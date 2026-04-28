@@ -1,0 +1,101 @@
+category_id,category_name,text,choice_a,choice_b,choice_c,choice_d,correct,is_boss
+1,Algorithmes,Quelle structure suit le principe premier entré premier sorti ?,Pile,File,Arbre,Table,B,FALSE
+1,Algorithmes,Quel tri simple échange les éléments voisins pour les mettre en ordre ?,Tri fusion,Tri à bulles,Tri rapide,Tri tas,B,FALSE
+1,Algorithmes,Quelle structure utilise push et pop pour ajouter ou retirer des valeurs ?,File,Pile,Tableau,Dictionnaire,B,FALSE
+1,Algorithmes,Comment appelle-t-on la recherche dans une liste triée qui coupe en deux à chaque étape ?,Recherche linéaire,Recherche binaire,Recherche brute force,Recherche aléatoire,B,FALSE
+1,Algorithmes,Quel type de boucle répète une action tant qu'une condition est vraie ?,for,while,do forever,loop,B,FALSE
+1,Algorithmes,Que renvoie une fonction Python qui ne contient pas de return explicite ?,True,0,None,Une chaîne vide,C,FALSE
+1,Algorithmes,Quel mot-clé arrête immédiatement une boucle en Python ?,stop,end,break,exit,C,FALSE
+1,Algorithmes,Quel opérateur compare l'égalité entre deux valeurs en Python ?,is,=,==,===,C,FALSE
+1,Algorithmes,Quel parcours de graphe visite niveau par niveau ?,DFS,BFS,Greedy,Recuit,B,FALSE
+1,Algorithmes,Quelle structure stocke des paires clé valeur ?,Liste,File,Ensemble,Dictionnaire,D,FALSE
+1,Algorithmes,Quel tri choisit toujours le plus petit élément restant puis le place au début ?,Tri rapide,Tri par sélection,Tri shell,Tri comptage,B,FALSE
+1,Algorithmes,Comment appelle-t-on la méthode qui découpe un problème en sous-problèmes puis combine les réponses ?,Programmation dynamique,Divide and conquer,Brute force,Randomisation,B,FALSE
+1,Algorithmes,Quel type d'erreur survient lorsqu'on accède à un indice inexistant dans une liste ?,TypeError,IndexError,KeyError,NameError,B,FALSE
+1,Algorithmes,Quel mot-clé sert à définir une fonction en Python ?,func,lambda,def,call,C,FALSE
+1,Algorithmes,Comment nomme-t-on la syntaxe [x for x in liste] qui construit une nouvelle liste ?,Slice,List comprehension,Générateur,Filtre,B,FALSE
+1,Algorithmes,Quel algorithme de recherche teste un motif en comparant caractère par caractère sans préparation ?,KMP,Knuth-Morris-Pratt,Recherche naïve,Boyer-Moore,C,FALSE
+1,Algorithmes,Quelle complexité correspond à une boucle simple parcourant n éléments ?,O(1),O(log n),O(n),O(n log n),C,FALSE
+1,Algorithmes,Quel schéma représente les étapes d'un programme sous forme de blocs ?,Organigramme,Table de vérité,Carte heuristique,Schéma entité relation,A,FALSE
+1,Algorithmes,Quelle variable spéciale contient tous les arguments supplémentaires dans une fonction Python ?,args,array,input,index,A,FALSE
+1,Algorithmes,BOSS Quel algorithme garantit le plus court chemin sur un graphe pondéré sans poids négatifs ?,Bellman-Ford,Dijkstra,Prim,Kruskal,B,TRUE
+2,Métiers IT,Qui anime les cérémonies quotidiennes dans Scrum ?,Product Owner,Scrum Master,Designer,QA,B,FALSE
+2,Métiers IT,Qui écrit les user stories et priorise le backlog ?,Développeur,Product Owner,DBA,Coach agile,B,FALSE
+2,Métiers IT,Quel rôle vérifie que l'application fonctionne après chaque changement ?,Architecte,QA tester,UI designer,Sysadmin,B,FALSE
+2,Métiers IT,Qui maintient les serveurs et les déploiements automatisés ?,Data scientist,DevOps,UX writer,Coach sportif,B,FALSE
+2,Métiers IT,Qui dessine les maquettes et l'apparence des écrans ?,UI UX designer,Analyste métier,Backend lead,Administrateur réseau,A,FALSE
+2,Métiers IT,Qui transforme des données en graphiques et rapports pour le métier ?,Développeur mobile,Data analyst,Product manager,Ingénieur sécurité,B,FALSE
+2,Métiers IT,Qui code principalement les fonctionnalités côté serveur ?,Développeur backend,Product owner,Designer son,Community manager,A,FALSE
+2,Métiers IT,Qui protège les systèmes contre les attaques ?,Formateur,Ingénieur sécurité,Animateur radio,Coach agile,B,FALSE
+2,Métiers IT,Qui veille à l'accessibilité et à la navigation claire d'un site ?,UX designer,DBA,Legal officer,Technicien réseau,A,FALSE
+2,Métiers IT,Quel rôle suit les indicateurs de succès (KPIs) d'un produit ?,Magasinier,Product manager,Game master,Intégrateur,B,FALSE
+2,Métiers IT,Qui gère les bases de données et leurs performances ?,UX writer,DBA,Motion designer,Coach sportif,B,FALSE
+2,Métiers IT,Quel profil rédige la documentation technique ?,Technical writer,Influenceur,Testeur utilisateur,Product owner,A,FALSE
+2,Métiers IT,Qui facilite la communication et l'amélioration continue dans une équipe agile ?,Chef de projet,Coach agile,Designer son,QA lead,B,FALSE
+2,Métiers IT,Quel métier s'occupe du référencement naturel d'un site (SEO) ?,Spécialiste SEO,Développeur vidéo,Chef cuisinier,Data engineer,A,FALSE
+2,Métiers IT,Qui automatise les tests et pipelines de build ?,Ingénieur CI CD,Coach sportif,Responsable boutique,Animateur TV,A,FALSE
+2,Métiers IT,Quel rôle suit le budget et le planning global d'un projet ?,Chef de projet,Développeur junior,Motion designer,Data scientist,A,FALSE
+2,Métiers IT,Qui forme les nouveaux utilisateurs à un logiciel ?,Formateur,Comptable,Chanteur,DevOps,A,FALSE
+2,Métiers IT,Quel métier vérifie la conformité au RGPD ?,Délégué à la protection des données,Product owner,Level designer,Team lead,A,FALSE
+2,Métiers IT,"Qui choisit le style graphique général (couleurs, typos) ?",Directeur artistique,Data analyst,QA,Sysadmin,A,FALSE
+2,Métiers IT,BOSS Quel rôle combine vision produit et priorisation du backlog dans Scrum ?,Product owner,Scrum master,Architecte,Designer,A,TRUE
+3,Logique,Quel nombre vient après cette suite 2 4 6 8 ?,3,9,10,12,C,FALSE
+3,Logique,Combien de lettres contient le mot LOGIQUE ?,6,7,8,9,B,FALSE
+3,Logique,Si tu inverses la chaîne 12345 que lis-tu ?,54321,15243,12354,12435,A,FALSE
+3,Logique,Quel est le plus petit nombre pair positif ?,0,1,2,5,C,FALSE
+3,Logique,Un train arrive dans 10 minutes et tu attends encore 5 minutes. Combien au total ?,5,10,15,20,C,FALSE
+3,Logique,Combien de minutes y a-t-il dans une heure ?,30,45,60,90,C,FALSE
+3,Logique,Si 5 pommes coûtent 5 euros combien coûtent 2 pommes ?,1 euro,2 euros,3 euros,5 euros,B,FALSE
+3,Logique,Dans la suite L M N O quelle lettre vient après ?,P,Q,R,S,A,FALSE
+3,Logique,Combien de mois ont 28 jours ?,Un seul,Trois,Douze,Aucun,C,FALSE
+3,Logique,Un objet pèse 1 kg sur Terre. Est-il plus léger sur la Lune ?,Oui,Non,Il pèse plus,Il disparaît,A,FALSE
+3,Logique,Combien de côtés a un hexagone ?,4,5,6,8,C,FALSE
+3,Logique,Si tu doubles le nombre 3 quel résultat obtiens-tu ?,4,5,6,9,C,FALSE
+3,Logique,Quel est l'intrus chien chat voiture lapin ?,chien,chat,voiture,lapin,C,FALSE
+3,Logique,Si aujourd'hui est lundi quel jour sera-t-on dans 3 jours ?,Mercredi,Jeudi,Vendredi,Samedi,B,FALSE
+3,Logique,Quel chiffre vaut X dans 5 + X = 9 ?,2,3,4,5,C,FALSE
+3,Logique,Combien vaut 0 multiplié par 12 ?,0,1,12,120,A,FALSE
+3,Logique,Quel est le contraire de vrai ?,Juste,Faux,Grand,Pair,B,FALSE
+3,Logique,Combien font 9 moins 3 ?,3,5,6,8,C,FALSE
+3,Logique,Si un code ajoute 1 à chaque chiffre que devient 789 ?,678,780,890,790,C,FALSE
+3,Logique,BOSS Combien de cases possède une grille standard de sudoku 9x9 ?,9,18,36,81,D,TRUE
+4,Culture générale,Qui a écrit Le Petit Prince ?,Molière,Victor Hugo,Antoine de Saint-Exupéry,Gustave Flaubert,C,FALSE
+4,Culture générale,Quelle est la capitale de la France ?,Lyon,Paris,Marseille,Nice,B,FALSE
+4,Culture générale,Dans les jeux Mario de quelle couleur est la tenue de Luigi ?,Rouge,Verte,Bleue,Orange,B,FALSE
+4,Culture générale,Qui chante Hello sortie en 2015 ?,Beyoncé,Adele,Taylor Swift,Rihanna,B,FALSE
+4,Culture générale,Quel film de 1975 met en scène un grand requin blanc ?,Titanic,Les Dents de la mer,Avatar,King Kong,B,FALSE
+4,Culture générale,Quelle langue est officielle au Québec ?,Anglais,Espagnol,Français,Allemand,C,FALSE
+4,Culture générale,Combien de cartes dans un jeu standard sans jokers ?,32,40,52,60,C,FALSE
+4,Culture générale,Quel instrument possède des touches noires et blanches ?,Guitare,Violon,Piano,Batterie,C,FALSE
+4,Culture générale,En quelle année est sortie la première PlayStation ?,1990,1994,2000,2002,B,FALSE
+4,Culture générale,Qui est l'auteur des Misérables ?,Émile Zola,Victor Hugo,Albert Camus,Colette,B,FALSE
+4,Culture générale,Quelle couleur domine sur le blason de Gryffondor ?,Vert,Bleu,Rouge,Jaune,C,FALSE
+4,Culture générale,Quel jeu de société consiste à aligner quatre jetons ?,Monopoly,Puissance 4,Cluedo,Échecs,B,FALSE
+4,Culture générale,Quel monument romain en forme d'arène est célèbre ?,Pyramide,Colisée,Tour Eiffel,Big Ben,B,FALSE
+4,Culture générale,Quelle console Nintendo précède la Switch ?,GameCube,Nintendo 64,Wii U,NES,C,FALSE
+4,Culture générale,Qui chante Thriller ?,Elvis Presley,Michael Jackson,Prince,David Bowie,B,FALSE
+4,Culture générale,Combien de saisons compte une année ?,2,3,4,5,C,FALSE
+4,Culture générale,Combien de joueurs composent une équipe de football sur le terrain ?,7,9,11,15,C,FALSE
+4,Culture générale,Quel studio a produit Toy Story ?,DreamWorks,Pixar,Universal,Studio Ghibli,B,FALSE
+4,Culture générale,Quel festival de cinéma se déroule sur la Croisette ?,Festival de Cannes,Les Oscars,César,BAFTA,A,FALSE
+4,Culture générale,BOSS Qui a composé La Marseillaise ?,Beethoven,Mozart,Jean-Jacques Rousseau,Claude Joseph Rouget de Lisle,D,TRUE
+5,Anglais,Que signifie hello en français ?,Salut,Bonsoir,Merci,Au revoir,A,FALSE
+5,Anglais,Le mot cat désigne un ?,Chien,Chat,Oiseau,Poisson,B,FALSE
+5,Anglais,Quel est l'opposé de cold ?,Dark,Small,Hot,Soft,C,FALSE
+5,Anglais,Thank you signifie ?,Désolé,S'il te plaît,Merci,Bonsoir,C,FALSE
+5,Anglais,Goodbye veut dire ?,Bienvenue,Au revoir,À plus tard,Bien joué,B,FALSE
+5,Anglais,Quel pronom utilise-t-on pour parler de soi en anglais ?,I,Me,You,They,A,FALSE
+5,Anglais,Quel est le pluriel de child ?,Childs,Childes,Children,Childrens,C,FALSE
+5,Anglais,Blue se traduit par ?,Vert,Bleu,Rouge,Blanc,B,FALSE
+5,Anglais,Teacher signifie ?,Élève,Enseignant,Parent,Coach,B,FALSE
+5,Anglais,Quel est le passé simple de to eat ?,Eat,Eated,Ate,Eaten,C,FALSE
+5,Anglais,Que veut dire book ?,Livre,Balle,Arbre,Pierre,A,FALSE
+5,Anglais,Le mot morning correspond au ?,Matin,Soir,Midi,Nuit,A,FALSE
+5,Anglais,Quel est l'opposé de big ?,Large,Tall,Small,Long,C,FALSE
+5,Anglais,Que signifie I am fine ?,Je vais bien,Je suis loin,Je ne sais pas,Je suis en retard,A,FALSE
+5,Anglais,Complète la phrase see you ___,Soon,Later,Never,Sooner,B,FALSE
+5,Anglais,Water est de l' ?,Air,Lait,Eau,Soda,C,FALSE
+5,Anglais,Breakfast est le repas du ?,Midi,Soir,Matin,Nuit,C,FALSE
+5,Anglais,Please s'utilise pour ?,Commander,Dormir,Demander poliment,Refuser poliment,C,FALSE
+5,Anglais,Friend signifie ?,Voisin,Ami,Collègue,Parent,B,FALSE
+5,Anglais,BOSS Quelle forme correcte complète she ___ a book au présent simple ?,read,reads,is read,reading,B,TRUE

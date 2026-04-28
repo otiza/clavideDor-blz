@@ -1,0 +1,13 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+<PageTitle>Clavier d'Or</PageTitle>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Redirect to main menu
+        NavigationManager.NavigateTo("/mainmenu");
+    }
+}
