@@ -333,6 +333,30 @@ public class GameService
     }
 
     /// <summary>
+    /// Get all unfinished games, newest first.
+    /// </summary>
+    public async Task<List<GameSession>> GetUnfinishedGamesAsync()
+    {
+        try
+        {
+            var unfinishedGames = await _context.GameSessions
+                .AsNoTracking()
+                .Include(g => g.Player)
+                .Include(g => g.AnsweredQuestions)
+                .Where(g => !g.IsFinished)
+                .OrderByDescending(g => g.StartedAt)
+                .ToListAsync();
+
+            return unfinishedGames;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting unfinished games list");
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Use a joker (role-specific ability)
     /// </summary>
     public async Task<bool> UseJokerAsync(int gameSessionId, PlayerRole role)
