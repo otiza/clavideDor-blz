@@ -162,7 +162,9 @@ public class GameViewModel : BaseViewModel
 
             if (CurrentQuestion == null)
             {
-                SetError("No more questions available");
+                // No remaining question means the game reached the end.
+                // Keep error empty so the UI can show the "Game Finished" panel.
+                ClearError();
                 return;
             }
 
@@ -517,4 +519,3 @@ public class GameViewModel : BaseViewModel
         return Math.Min((TotalQuestionsAnswered * 100) / totalQuestions, 100);
     }
 }
-
